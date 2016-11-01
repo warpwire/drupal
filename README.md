@@ -1,10 +1,5 @@
 # Warpwire Drupal Install Instructions
 
-###CONTENTS OF THIS FILE
-1. Introduction
-2. Requirements
-3. Installation
-
 ###INTRODUCTION
 The Warpwire module allows for the embedding of Warpwire content within Drupal,
 via a WYWIWYG integration, the CKEditor, or directly.
