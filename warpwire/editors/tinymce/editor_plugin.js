@@ -73,7 +73,15 @@
 
       editor.addCommand('warpwire', function() {
 
+        Drupal.settings.warpwire.pluginId = '';
+        for (i = 0; i < 32; i++) {
+          Drupal.settings.warpwire.pluginId += Math.floor(Math.random() * 16).toString(16);
+        }
+        var pluginId = Drupal.settings.warpwire.pluginId;
+
         addEvt(window, "message", function(ev) {
+            if(Drupal.settings.warpwire.pluginId != pluginId)
+              return(false);          
             var parsedData = JSON.parse(ev.data);
             if (parsedData.message === "deliverResult") {
               var frames = JSON.parse(parsedData.result);
