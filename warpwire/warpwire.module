@@ -17,7 +17,8 @@ function warpwire_init() {
           'warpwire_module_path' => drupal_get_path('module', 'warpwire'),
           'warpwire_share_default' => variable_get('warpwire_share_default'),
           'warpwire_title_default' => variable_get('warpwire_title_default'),
-          'warpwire_autoplay_default' => variable_get('warpwire_autoplay_default')
+          'warpwire_autoplay_default' => variable_get('warpwire_autoplay_default'),
+          'warpwire_cc_load_policy_default' => variable_get('warpwire_cc_load_policy_default')
       )
     ), 'setting');
 }
@@ -219,7 +220,14 @@ function warpwire_admin($form) {
     '#title' => t('Enable autoplay for embedded Warpwire media.'),
     '#default_value' => variable_get('warpwire_autoplay_default', 0),
     '#description' => t("Enable/disable autoplay for embedded Warpwire media."),
-  );     
+  );    
+
+  $_adminFormElements['warpwire_cc_load_policy_default'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable closed captions by default for embedded Warpwire media.'),
+    '#default_value' => variable_get('warpwire_cc_load_policy_default', 0),
+    '#description' => t("Enable/disable closed captions by default for embedded Warpwire media."),
+  );
 
   return system_settings_form($_adminFormElements);
 }
@@ -363,6 +371,9 @@ function warpwire_filter($text, $filter, $format, $langcode, $cache, $cache_id) 
         if(!isset($parameters['autoplay']) && (variable_get('warpwire_autoplay_default') == 1))
           $parameters['autoplay'] = 'true';
 
+        if(!isset($parameters['cc_load_policy']) && (variable_get('warpwire_cc_load_policy_default') == 1))
+          $parameters['cc_load_policy'] = 1;
+
         $url_parts['query'] = http_build_query($parameters);
 
         $url = $url_parts['scheme'].'://'.$url_parts['host'].$url_parts['path'].'?'.$url_parts['query'];
@@ -422,6 +433,9 @@ function warpwire_filter($text, $filter, $format, $langcode, $cache, $cache_id) 
 
       if(!isset($parameters['autoplay']) && (variable_get('warpwire_autoplay_default') == 1))
         $parameters['autoplay'] = 'true';
+
+      if(!isset($parameters['cc_load_policy']) && (variable_get('warpwire_cc_load_policy_default') == 1))
+        $parameters['cc_load_policy'] = 1;
 
       $url_parts['query'] = http_build_query($parameters);
 
