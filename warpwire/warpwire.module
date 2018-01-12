@@ -281,20 +281,10 @@ function warpwire_wysiwyg_plugin($editor, $version) {
  * Implementation of hook_filter_info().
  */
 function warpwire_filter_info() {
+  $filters = array();
 
-  cache_clear_all('*', 'cache_filter', TRUE);
-  cache_clear_all('*', 'cache_field', TRUE);
-
-  $filters['filter_html'] = array(
-    'title' => t('Warpwire Filter - Filtered HTML'),
-    'description' => t('Substitutes [warpwire:URL] with secure Warpwire player.'),
-    'process callback' => 'warpwire_filter',
-    'tips callback'  => 'warpwire_tips',
-    'cache' => FALSE,
-  );
-
-  $filters['full_html'] = array(
-    'title' => t('Warpwire Filter - Full HTML'),
+  $filters['warpwire'] = array(
+    'title' => t('Warpwire Filter'),
     'description' => t('Substitutes [warpwire:URL] with secure Warpwire player.'),
     'process callback' => 'warpwire_filter',
     'tips callback'  => 'warpwire_tips',
