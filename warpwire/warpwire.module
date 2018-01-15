@@ -4,7 +4,6 @@
  * @file
  * Main file for warpwire module.
  */
-require_once ('OAuth.php');
 
 /**
  * Implementation of hook_init().
