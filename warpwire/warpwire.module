@@ -10,7 +10,7 @@
  */
 function warpwire_init() {
   drupal_add_js(array(
-    'warpwire' => 
+    'warpwire' =>
       array(
           'warpwire_url' => variable_get('warpwire_url'),
           'warpwire_module_path' => drupal_get_path('module', 'warpwire'),
@@ -38,38 +38,75 @@ function warpwire_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
 
-  $_menuItems['warpwire/external_content'] = array( 
+  $_menuItems['warpwire/external_content'] = array(
     'title' => 'Warpwire External Content',
     'page callback' => 'warpwire_external_content',
     'access arguments' => array('access content'),
-    'type' => MENU_CALLBACK,    
+    'type' => MENU_CALLBACK,
   );
 
   return $_menuItems;
 }
 
+function warpwire_error($message = 'An error has occurred') {
+  // Build an error page for the supplied message
+  $html = "
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Warpwire Error</title>
+      <meta name='error' content='width=device-width, initial-scale=1, maximum-scale=1' />
+      <style>
+        .hidden { display: none; }
+        body { margin: 0; font-family: Helvetica, sans-serif; font-weight: 300; font-size: 14px; }
+        .header { padding: 15px; background: #0073ba; color: #ffffff;}
+        .content { margin: 30px 15px; }
+        .bold { font-weight: 500; }
+      </style>
+    </head>
+    <body>
+    <div class='header'>Warpwire Error</div>
+    <div class='content'>
+      <p>".filter_xss($message)."</p>
+    </div>
+    </body>
+    </html>
+  ";
+
+  print $html;
+  drupal_exit();
+}
+
 function warpwire_external_content() {
-  global $user, $base_url;
+  global $user;
+  $ww_url = variable_get('warpwire_url');
+  $url = !empty($_GET['url']) ? $_GET['url'] : '';
+
+  // Ensure the URL is legit before redirecting.
+  $ww_host = parse_url($ww_url, PHP_URL_HOST);
+  $url_host = parse_url($url, PHP_URL_HOST);
+  if ($ww_host != $url_host) {
+    $error_message = 'URL host does not match configured Warpwire host';
+    watchdog('warpwire', $error_message);
+    warpwire_error('This embedded content is not associated with the active Warpwire configuration. Please contact the site administrator to resolve this issue. Error: "'.$error_message.'"');
+    drupal_exit();
+  }
 
   // if user is not logged in, do not forward them via LTI
   if(!user_is_logged_in()) {
-
-    $url_parts = parse_url($_GET['url']);
+    $url_parts = parse_url($url);
     if(!isset($url_parts['query']) || empty($url_parts['query']) || !stristr($url_parts['query'], 'returncontext')) {
-      drupal_goto($_GET['url']);
-      exit;
+      drupal_goto($url);
     }
 
     $query_parts = array();
     parse_str($url_parts['query'], $query_parts);
 
     if(!isset($query_parts['returnContext']) || empty($query_parts['returnContext'])) {
-      drupal_goto($_GET['url']);
-      exit;
+      drupal_goto($url);
     }
 
     drupal_goto($query_parts['returnContext']);
-    exit;
   }
 
   $ww_drupal_api = variable_get('warpwire_group_name');
@@ -96,12 +133,14 @@ function warpwire_external_content() {
     'lis_person_contact_email_primary' => $user->mail,
     'lti_message_type' => 'basic-lti-launch-request',
     'lti_version' => 'LTI-1p0',
-    'returnContext' => $_GET['url'],
+    'returnContext' => $url,
     'roles' => implode(':',$user->roles),
     'user_id' => $user->name,
     'custom_context_id' => $ww_drupal_api_unique_id,
     'custom_plugin_info' => '',
   );
+
+  drupal_alter('warpwire_lti', $params);
 
   // build the OAuth signature
   $oauthHMAC = new OAuthSignatureMethod_HMAC_SHA1();
@@ -111,39 +150,30 @@ function warpwire_external_content() {
 
   $params['oauth_signature'] = $sig;
 
-  // build the form to submit LTI credentials
-  $content = '<html><head></head><body><form id="warpwire_lti_post" method="POST" enctype="application/x-www-form-urlencoded" action="'.variable_get('warpwire_lti_url').'">'.PHP_EOL;
-  foreach($params AS $key => $value) {
-    $content .= '<input type="hidden" name="'.$key.'" value="'.$value.'" />';
+  // Build the form to submit LTI credentials.
+  $html = '<html><head></head><body>';
+  foreach ($params as $key => $value) {
+    $form[$key]['#type'] = 'hidden';
+    $form[$key]['#name'] = $key;
+    $form[$key]['#value'] = $value;
   }
-  $content .= '<div id="warpwire_display_submit"><p>Please press the Submit button to continue.</p>';
-  $content .= '<p><input type="submit" value="Submit"></p></div>';
-  $content .= '</form>';
-  $content .= '
+
+  $form['#type'] = 'form';
+  $form['#attributes']['id'] = 'warpwire_lti_post';
+  $form['#action'] = variable_get('warpwire_lti_url');
+
+  $html .= drupal_render($form);
+  $html .= '
     <script>
       (function(){
-        var warpwireDisplaySection = document.getElementById("warpwire_display_submit");
-        if( (warpwireDisplaySection) && (warpwireDisplaySection != null) ) {
-          warpwireDisplaySection.style.display = "none";
-
-          setTimeout(function(){
-            warpwireDisplaySection.style.display = "block";
-          }, 4000);
-        }
-
-        var warpwireLTIForm = document.getElementById("warpwire_lti_post");
-
-        if( (!warpwireLTIForm) || (warpwireLTIForm == null) )
-          return(false);
-
-        warpwireLTIForm.submit();
+       document.getElementById("warpwire_lti_post").submit();
       })();
     </script>';
 
-  $content .= '</body></html>';
+  $html .= '</body></html>';
 
-  echo($content);
-  exit;
+  print $html;
+  drupal_exit();
 }
 
 // Module configuration form
@@ -168,7 +198,7 @@ function warpwire_admin($form) {
     '#maxlength' => 255,
     '#description' => t("The URL of your Warpwire LTI endpoint."),
     '#required' => TRUE,
-  );  
+  );
 
   $_adminFormElements['warpwire_group_name'] = array(
     '#type' => 'textfield',
@@ -188,7 +218,7 @@ function warpwire_admin($form) {
     '#maxlength' => 255,
     '#description' => t("Your Warpwire OAuth Consumer Key."),
     '#required' => TRUE,
-  );  
+  );
 
   $_adminFormElements['warpwire_oauth_secret'] = array(
     '#type' => 'textfield',
@@ -198,7 +228,7 @@ function warpwire_admin($form) {
     '#maxlength' => 255,
     '#description' => t("Your Warpwire OAuth Secret."),
     '#required' => TRUE,
-  );  
+  );
 
   $_adminFormElements['warpwire_share_default'] = array(
     '#type' => 'checkbox',
@@ -219,7 +249,7 @@ function warpwire_admin($form) {
     '#title' => t('Enable autoplay for embedded Warpwire media.'),
     '#default_value' => variable_get('warpwire_autoplay_default', 0),
     '#description' => t("Enable/disable autoplay for embedded Warpwire media."),
-  );    
+  );
 
   $_adminFormElements['warpwire_cc_load_policy_default'] = array(
     '#type' => 'checkbox',
@@ -263,7 +293,7 @@ function warpwire_wysiwyg_plugin($editor, $version) {
   $plugins['warpwire'] = array(
     // A URL to the plugin's homepage.
     'url' => variable_get('warpwire_url'),
-    // The full path to the native editor plugin, no trailing slash 
+    // The full path to the native editor plugin, no trailing slash
     'path' => drupal_get_path('module', 'warpwire') . $_editorPath,
     // The name of the plugin's main JavaScript file
     'filename' => $_filename,
@@ -389,8 +419,8 @@ function warpwire_filter($text, $filter, $format, $langcode, $cache, $cache_id) 
         if(!empty($parameters['width']))
           $iframe_width = $parameters['width'];
         if(!empty($parameters['height']))
-          $iframe_height = $parameters['height'];       
-          
+          $iframe_height = $parameters['height'];
+
         $patterns = array('/URL/', '/WIDTH/', '/HEIGHT/');
         $replace = array($url, $iframe_width, $iframe_height);
         $iframe_html = preg_replace($patterns, $replace, $iframe_template);
@@ -452,7 +482,7 @@ function warpwire_filter($text, $filter, $format, $langcode, $cache, $cache_id) 
       if(!empty($parameters['width']))
         $iframe_width = $parameters['width'];
       if(!empty($parameters['height']))
-        $iframe_height = $parameters['height'];        
+        $iframe_height = $parameters['height'];
 
       $patterns = array('/URL/', '/WIDTH/', '/HEIGHT/');
       $replace = array($url, $iframe_width, $iframe_height);
