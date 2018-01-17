@@ -147,7 +147,15 @@
           if(launch_url_with_defaults.length <= 2000)
             launch_url = launch_url_with_defaults;
 
-          var child = window.open(self.editor.baseUrl+self.editor.path+"html/redirect.html?redirectURL="+encodeURIComponent(launch_url), '_wwPlugin', 'width=400, height=500');
+          var pluginUrl = self.editor.baseUrl+self.editor.path+"html/redirect.html?redirectURL="+encodeURIComponent(launch_url);
+          if(
+            (typeof(Drupal.settings.warpwire.warpwire_secure_portal_default) != 'undefined')
+            && (Drupal.settings.warpwire.warpwire_secure_portal_default != 0)
+          ) {
+            pluginUrl = '/?q=warpwire/external_content&url='+encodeURIComponent(launch_url);
+          }
+          
+          var child = window.open(pluginUrl, '_wwPlugin', 'width=400, height=500');
 
           var leftDomain = false;
           var interval = setInterval(function() {
