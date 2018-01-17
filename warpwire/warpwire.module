@@ -17,7 +17,8 @@ function warpwire_init() {
           'warpwire_share_default' => variable_get('warpwire_share_default'),
           'warpwire_title_default' => variable_get('warpwire_title_default'),
           'warpwire_autoplay_default' => variable_get('warpwire_autoplay_default'),
-          'warpwire_cc_load_policy_default' => variable_get('warpwire_cc_load_policy_default')
+          'warpwire_cc_load_policy_default' => variable_get('warpwire_cc_load_policy_default'),
+          'warpwire_secure_portal_default' => variable_get('warpwire_secure_portal_default')
       )
     ), 'setting');
 }
@@ -256,6 +257,13 @@ function warpwire_admin($form) {
     '#title' => t('Enable closed captions by default for embedded Warpwire media.'),
     '#default_value' => variable_get('warpwire_cc_load_policy_default', 0),
     '#description' => t("Enable/disable closed captions by default for embedded Warpwire media."),
+  );
+
+  $_adminFormElements['warpwire_secure_portal_default'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use LTI to open Warpwire WYSIWYG editor.'),
+    '#default_value' => variable_get('warpwire_secure_portal_default', 0),
+    '#description' => t("Use local user data to open Warpwire WYSIWYG editor. Do not enable if using SSO authentication, contact support for more information."),
   );
 
   return system_settings_form($_adminFormElements);
