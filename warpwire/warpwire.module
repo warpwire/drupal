@@ -18,7 +18,7 @@ function warpwire_init() {
           'warpwire_title_default' => variable_get('warpwire_title_default'),
           'warpwire_autoplay_default' => variable_get('warpwire_autoplay_default'),
           'warpwire_cc_load_policy_default' => variable_get('warpwire_cc_load_policy_default'),
-          'warpwire_secure_portal_default' => variable_get('warpwire_secure_portal_default'),
+          'warpwire_secure_portal_default' => variable_get('warpwire_secure_portal_default')
       )
     ), 'setting');
 }
