@@ -371,14 +371,15 @@ function warpwire_filter($text, $filter, $format, $langcode, $cache, $cache_id) 
   global $user;
 
   // iframe template element
-  $iframe_template = '<iframe src="URL"
+ $iframe_template = '<iframe src="URL"
     width="WIDTH"
     height="HEIGHT"
     frameborder="0"
+    allow="autoplay *; encrypted-media *;fullscreen *;"
     allowfullscreen="allowfullscreen"
     mozallowfullscreen="mozallowfullscreen"
     webkitallowfullscreen="webkitallowfullscreen">
-    </iframe>';
+</iframe>';
 
   // match all warpwire shortcode instances returned from plugins
   if (preg_match_all('/<img.*?>/is', $text, $matches_code)) {
