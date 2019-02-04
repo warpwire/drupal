@@ -1,6 +1,6 @@
 # Warpwire Drupal Install Instructions
 
-###INTRODUCTION
+## INTRODUCTION ##
 The Warpwire module allows for the embedding of Warpwire content within Drupal,
 via a WYWIWYG integration, the CKEditor, or directly.
 
@@ -8,7 +8,7 @@ An example of an embeddable Warpwire asset is as follows:
 
 [warpwire:https://example.warpwire.com/w/AAAAAA/]
 
-###REQUIREMENTS
+## REQUIREMENTS ##
 
 Modules
  * At least one of the following:
@@ -20,7 +20,7 @@ Modules
    - CKEditor - WYSIWYG text editor.
 
 
-###INSTALLATION
+## INSTALLATION ##
 
 The Warpwire module can be installed via the standard Drupal installation process
 (http://drupal.org/node/895232).  Alternatively, simply extract the Warpwire module into
@@ -30,7 +30,7 @@ Warpwire can be installed to function utilizing either the Wysiwyg or CKEditor m
 for configuring Warpwire within each configuration follow below:
 
 
-###WYSIWYG (with CKEditor or TinyMCE)
+## WYSIWYG (with CKEditor or TinyMCE) ##
 
 After installing the Warpwire module, you will need to configure the module 
 for use in the WYSIWYG editor by following the steps below:
@@ -54,7 +54,7 @@ for use in the WYSIWYG editor by following the steps below:
    'https://example.warpwire.com/'.  Make sure you include the 'https://', as well as the trailing
    slash.
 
-###CKEditor Only
+## CKEditor Only ##
 
 After installing the Warpwire module, you will need to configure the module 
 for use in the CKEditor by following the steps below:
