@@ -136,7 +136,7 @@ function warpwire_external_content() {
     'lti_version' => 'LTI-1p0',
     'returnContext' => $url,
     'roles' => implode(':',$user->roles),
-    'user_id' => $user->name,
+    'user_id' => $user->uid,
     'custom_context_id' => $ww_drupal_api_unique_id,
     'custom_plugin_info' => '',
   );
